@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolBorrow — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fira+Code:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="login-page">
+
+  <div class="login-page__brand">
+    <div class="login-page__logo">🔧 TOOLBORROW</div>
+    <p class="login-page__tagline">The smart way to manage and borrow equipment</p>
+    <div class="login-page__feature"><span class="login-page__feature-icon">📦</span> Track every item in your inventory</div>
+    <div class="login-page__feature"><span class="login-page__feature-icon">📅</span> Due dates, overdue alerts and history</div>
+    <div class="login-page__feature"><span class="login-page__feature-icon">⚡</span> Real-time availability updates</div>
+  </div>
+
+  
+  <div class="login-page__form-wrap">
+    <h2>Welcome back</h2>
+    <p>Sign in or create a new account</p>
+
+    
+    <div class="tabs">
+      <button class="tab-link tab-link--active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-link" onclick="switchTab('register')">Register</button>
+    </div>
+
+    
+    <div id="pane-login" class="tab-pane tab-pane--active">
+      <div id="loginError" class="form-error"></div>
+      <div class="field">
+        <label>Email address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+      </div>
+      <div class="field">
+        <label>Login as</label>
+        <select id="loginRole">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button class="btn btn--primary btn--full" id="loginBtn" onclick="handleLogin()">Sign In</button>
+
+    </div>
+
+    
+    <div id="pane-register" class="tab-pane">
+      <div id="registerError" class="form-error"></div>
+      <div class="field">
+        <label>Full name <span class="req">*</span></label>
+        <input type="text" id="regName" placeholder="Jane Smith" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Email address <span class="req">*</span></label>
+        <input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Password <span class="req">*</span></label>
+        <input type="password" id="regPassword" placeholder="At least 6 characters" autocomplete="new-password">
+      </div>
+      <button class="btn btn--primary btn--full" id="registerBtn" onclick="handleRegister()">Create Account</button>
+      
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+  
+  (function () {
+    if (!isLoggedIn()) return;
+    const role = getUser()?.role;
+    window.location.href = role === 'admin' ? '/toolborrow/admin.html' : '/toolborrow/user.html';
+  })();
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-link').forEach((t, i) =>
+      t.classList.toggle('tab-link--active', (i === 0 && name === 'login') || (i === 1 && name === 'register')));
+    document.getElementById('pane-login').classList.toggle('tab-pane--active', name === 'login');
+    document.getElementById('pane-register').classList.toggle('tab-pane--active', name === 'register');
+  }
+
+  function setError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.toggle('form-error--show', !!msg);
+  }
+
+  function setBtnLoading(id, loading) {
+    const btn = document.getElementById(id);
+    btn.classList.toggle('btn--loading', loading);
+    btn.textContent = loading ? (id === 'loginBtn' ? 'Signing in…' : 'Creating account…') : (id === 'loginBtn' ? 'Sign In' : 'Create Account');
+  }
+
+  async function handleLogin() {
+    const email    = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const role     = document.getElementById('loginRole').value;
+    setError('loginError', '');
+    if (!email || !password) { setError('loginError', 'Email and password are required.'); return; }
+
+    setBtnLoading('loginBtn', true);
+    try {
+      const res = await apiFetch('/auth/login', { method: 'POST', body: { email, password, role } });
+      setSession(res.token, res.user);
+      window.location.href = res.user.role === 'admin' ? '/toolborrow/admin.html' : '/toolborrow/user.html';
+    } catch (e) {
+      setError('loginError', e.message);
+      setBtnLoading('loginBtn', false);
+    }
+  }
+
+  async function handleRegister() {
+    const name     = document.getElementById('regName').value.trim();
+    const email    = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    setError('registerError', '');
+
+    if (!name || !email || !password) { setError('registerError', 'All fields are required.'); return; }
+    if (password.length < 6)          { setError('registerError', 'Password must be at least 6 characters.'); return; }
+
+    setBtnLoading('registerBtn', true);
+    try {
+      await apiFetch('/auth/register', { method: 'POST', body: { name, email, password } });
+      
+      const res = await apiFetch('/auth/login', { method: 'POST', body: { email, password } });
+      setSession(res.token, res.user);
+      window.location.href = '/toolborrow/user.html';
+    } catch (e) {
+      setError('registerError', e.message);
+      setBtnLoading('registerBtn', false);
+    }
+  }
+
+  
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const active = document.querySelector('.tab-pane--active');
+    if (active?.id === 'pane-login')    handleLogin();
+    if (active?.id === 'pane-register') handleRegister();
+  });
+</script>
+</body>
+</html>

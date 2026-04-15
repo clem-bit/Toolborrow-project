@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolBorrow — Browse Equipment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fira+Code:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="user-layout">
+
+  
+  <nav class="user-topnav">
+    <div class="user-topnav__logo">🔧 ToolBorrow</div>
+    <div class="user-topnav__right">
+      <div class="user-topnav__avatar" id="topInitial">U</div>
+      <span class="user-topnav__name" id="topName">User</span>
+      <button class="user-topnav__logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+
+  
+  <div class="limit-bar">
+    <span class="limit__label">Rental limit:</span>
+    <div class="limit__track"><div class="limit__fill" id="limitFill" style="width:0%"></div></div>
+    <span class="limit__text" id="limitLabel">0 of 3 rentals used</span>
+  </div>
+
+  
+  <div class="user-content">
+
+   
+    <div class="tabs-bar">
+      <button class="tab__btn tab__btn--active" data-tab="browse" onclick="showTab('browse')">
+        🔧 Browse Equipment
+      </button>
+      <button class="tab__btn" data-tab="rentals" onclick="showTab('rentals');loadMyLoans();">
+        📦 My Rentals
+        <span class="tab__count" id="activeCount">0</span>
+      </button>
+    </div>
+
+    
+    <div class="tab__content tab__content--active" id="tab-browse">
+
+      
+      <div class="panel" style="margin-bottom:1.25rem;">
+        <div class="panel__body" style="padding:.9rem 1.25rem;">
+          <div class="search-bar">
+            <div class="search-bar__input" style="flex:2;min-width:200px;">
+              <input type="text" id="searchInput" placeholder="Search equipment by name…" oninput="handleSearch()">
+            </div>
+            <select id="catFilter" onchange="loadTools()" style="min-width:160px;">
+              <option value="">All Categories</option>
+            </select>
+            <select id="condFilter" onchange="loadTools()" style="min-width:140px;">
+              <option value="">All Conditions</option>
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Poor</option>
+            </select>
+            <button class="btn btn--outline btn--sm" onclick="document.getElementById('searchInput').value='';document.getElementById('catFilter').value='';document.getElementById('condFilter').value='';loadTools();">
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="tool-grid-wrap" id="toolGrid">
+        <div class="grid__empty">Loading equipment…</div>
+      </div>
+
+    </div>
+
+    
+    <div class="tab__content" id="tab-rentals">
+
+      
+      <div class="panel" style="margin-bottom:1.25rem;">
+        <div class="panel__head">
+          <span class="panel__title">📋 Active Rentals</span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Equipment</th><th>Category</th>
+                <th>Borrowed</th><th>Due Date</th>
+                <th>Status</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="activeBody">
+              <tr><td colspan="6" class="tbl__empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      
+      <div class="panel">
+        <div class="panel__head">
+          <span class="panel__title">📜 Rental History</span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Equipment</th><th>Borrowed</th>
+                <th>Due Date</th><th>Returned</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody">
+              <tr><td colspan="5" class="tbl__empty">No history yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="rentModal">
+  <div class="modal__backdrop"></div>
+  <div class="modal__box">
+    <div class="modal__head">
+      <h3>Rent Equipment</h3>
+      <button class="modal__close" onclick="closeModal('rentModal')">×</button>
+    </div>
+    <div class="modal__body">
+      <div class="rent-info">
+        <div class="rent-info__tool" id="rentToolName">—</div>
+        <div class="rent-info__note">Select how long you need this equipment</div>
+      </div>
+      <div class="field">
+        <label>Return Due Date <span class="req">*</span></label>
+        <input type="date" id="rentDue">
+      </div>
+      <div class="field">
+        <label>Notes (optional)</label>
+        <textarea id="rentNotes" rows="2" placeholder="What will you be using it for?"></textarea>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:.75rem 1rem;font-size:.82rem;color:var(--muted);">
+        ⚠ You can have a maximum of <strong>3 active rentals</strong> at a time. Equipment must be returned by the due date.
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn btn--ghost" onclick="closeModal('rentModal')">Cancel</button>
+      <button class="btn btn--primary" onclick="confirmRent()">Confirm Rental</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="user.js"></script>
+</body>
+</html>

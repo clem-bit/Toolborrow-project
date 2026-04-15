@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolBorrow — Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fira+Code:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+
+  
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__logo">
+      <div class="sidebar__logo-text">🔧 ToolBorrow</div>
+      <div class="sidebar__logo-sub">Admin Panel</div>
+    </div>
+
+    <nav class="sidebar__nav">
+      <div class="nav__section-label">Overview</div>
+      <div class="nav__item" data-section="dashboard" onclick="showSection('dashboard')">
+        <span class="nav__item__icon">📊</span> Dashboard
+      </div>
+
+      <div class="nav__section-label">Manage</div>
+      <div class="nav__item" data-section="equipment" onclick="showSection('equipment')">
+        <span class="nav__item__icon">🔧</span> Equipment
+      </div>
+      <div class="nav__item" data-section="users" onclick="showSection('users')">
+        <span class="nav__item__icon">👥</span> Users
+      </div>
+
+      <div class="nav__section-label">Loans</div>
+      <div class="nav__item" data-section="loans" onclick="showSection('loans')">
+        <span class="nav__item__icon">📦</span> Active Loans
+      </div>
+      <div class="nav__item" data-section="overdue" onclick="showSection('overdue')">
+        <span class="nav__item__icon">⚠️</span> Overdue Returns
+      </div>
+    </nav>
+
+    <div class="sidebar__user">
+      <div class="sidebar__avatar" id="sidebarInitial">A</div>
+      <div class="sidebar__info">
+        <div class="sidebar__name"  id="sidebarName">Admin</div>
+        <div class="sidebar__email" id="sidebarEmail">—</div>
+      </div>
+     
+    </div>
+  </aside>
+
+  
+  <div class="admin-main">
+
+    
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('sidebar--open')">☰</button>
+        <h1 id="pageTitle">Dashboard</h1>
+      </div>
+      <div class="admin-topbar__right">
+        <button class="btn btn--ghost btn--sm" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      
+      <div class="section" id="sec-dashboard">
+
+        <div class="stats-grid" style="margin-bottom:1.5rem;">
+          <div class="stat-card stat-card--blue">
+            <div class="stat-card__label">Total Equipment</div>
+            <div class="stat-card__value" id="stat-total">—</div>
+          </div>
+          <div class="stat-card stat-card--green">
+            <div class="stat-card__label">Available</div>
+            <div class="stat-card__value" id="stat-available">—</div>
+          </div>
+          <div class="stat-card stat-card--orange">
+            <div class="stat-card__label">On Loan</div>
+            <div class="stat-card__value" id="stat-on-loan">—</div>
+          </div>
+          <div class="stat-card stat-card--accent">
+            <div class="stat-card__label">Overdue</div>
+            <div class="stat-card__value" id="stat-overdue">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__label">Maintenance</div>
+            <div class="stat-card__value" id="stat-maintenance">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__label">Registered Users</div>
+            <div class="stat-card__value" id="stat-users">—</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <span class="panel__title">📋 Active &amp; Overdue Loans</span>
+            <button class="btn btn--xs btn--outline" onclick="showSection('loans')">View All</button>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Borrower</th><th>Equipment</th><th>Due Date</th><th>Status</th><th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recentLoansBody">
+                <tr><td colspan="6" class="tbl__empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="section" id="sec-equipment">
+        <div class="section__head">
+          <h2>Equipment Inventory</h2>
+          <button class="btn btn--primary btn--sm" onclick="openAddTool()">+ Add Equipment</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <div class="search-bar" style="flex:1;">
+              <div class="search-bar__input">
+                <input type="text" id="toolSearch" placeholder="Search equipment…" oninput="debounceSearch(renderToolsTable)">
+              </div>
+              <select id="toolCatFilter" class="js-cat-select" onchange="renderToolsTable()" style="width:auto;min-width:160px;"></select>
+              <select id="toolCondFilter" onchange="renderToolsTable()" style="width:auto;min-width:140px;">
+                <option value="">All Conditions</option>
+                <option value="excellent">Excellent</option>
+                <option value="good">Good</option>
+                <option value="fair">Fair</option>
+                <option value="poor">Poor</option>
+              </select>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Name</th><th>Serial No.</th><th>Category</th><th>Description</th>
+                  <th>Qty (Avail/Total)</th><th>Condition</th><th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="toolsBody">
+                <tr><td colspan="8" class="tbl__empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="section" id="sec-users">
+        <div class="section__head">
+          <h2>User Accounts</h2>
+          <button class="btn btn--primary btn--sm" onclick="openAddUser()">+ Add User</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <div class="search-bar" style="flex:1;">
+              <div class="search-bar__input">
+                <input type="text" id="userSearch" placeholder="Search by name or email…" oninput="debounceSearch(renderUsersTable)">
+              </div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="usersBody">
+                <tr><td colspan="5" class="tbl__empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="section" id="sec-loans">
+        <div class="section__head">
+          <h2>Active Loans</h2>
+        </div>
+        <div class="panel">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>ID</th><th>Borrower</th><th>Equipment</th><th>Borrowed</th><th>Due Date</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody id="loansBody">
+                <tr><td colspan="7" class="tbl__empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="section" id="sec-overdue">
+        <div class="section__head">
+          <h2>Overdue Returns</h2>
+        </div>
+        <div class="panel">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>ID</th><th>Borrower</th><th>Equipment</th><th>Due Date</th><th>Days Overdue</th><th>Action</th></tr>
+              </thead>
+              <tbody id="overdueBody">
+                <tr><td colspan="6" class="tbl__empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="toolModal">
+  <div class="modal__backdrop"></div>
+  <div class="modal__box">
+    <div class="modal__head">
+      <h3 id="toolModalTitle">Add Equipment</h3>
+      <button class="modal__close" onclick="closeModal('toolModal')">×</button>
+    </div>
+    <div class="modal__body">
+      <form id="toolForm" onsubmit="event.preventDefault();saveTool();">
+        <div class="form-row" style="margin-bottom:1rem;">
+          <div class="field">
+            <label>Equipment Name <span class="req">*</span></label>
+            <input type="text" id="toolName" placeholder="e.g. Cordless Drill" required>
+          </div>
+          <div class="field">
+            <label>Category</label>
+            <select id="toolCat" class="js-cat-select"></select>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:1rem;">
+          <div class="field">
+            <label>Serial Number</label>
+            <input type="text" id="toolSerial" placeholder="e.g. SN-20250001">
+          </div>
+          <div class="field">
+            <label>Condition</label>
+            <select id="toolCond">
+              <option value="excellent">Excellent</option>
+              <option value="good" selected>Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Poor</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:1rem;">
+          <label>Description</label>
+          <textarea id="toolDesc" placeholder="Brief description of the equipment…" rows="2"></textarea>
+        </div>
+        <div class="form-row" style="margin-bottom:1rem;">
+          <div class="field">
+            <label>Total Quantity</label>
+            <input type="number" id="toolQty" value="1" min="1" max="999">
+          </div>
+          <div class="field" id="toolStatusGroup" style="display:none;">
+            <label>Status</label>
+            <select id="toolStatusSel">
+              <option value="available">Available</option>
+              <option value="borrowed">Borrowed</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__foot">
+      <button class="btn btn--ghost" onclick="closeModal('toolModal')">Cancel</button>
+      <button class="btn btn--primary" onclick="saveTool()">Save Equipment</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="userModal">
+  <div class="modal__backdrop"></div>
+  <div class="modal__box">
+    <div class="modal__head">
+      <h3 id="userModalTitle">Add User</h3>
+      <button class="modal__close" onclick="closeModal('userModal')">×</button>
+    </div>
+    <div class="modal__body">
+      <form id="userForm" onsubmit="event.preventDefault();saveUser();">
+        <div class="form-row" style="margin-bottom:1rem;">
+          <div class="field">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" id="uName" placeholder="Jane Smith" required>
+          </div>
+          <div class="field">
+            <label>Email Address <span class="req">*</span></label>
+            <input type="email" id="uEmail" placeholder="jane@example.com" required>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:1rem;">
+          <div class="field">
+            <label id="userPwLabel">Password <span class="req">*</span></label>
+            <input type="password" id="uPw" placeholder="Minimum 6 characters">
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <select id="uRole">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal__foot">
+      <button class="btn btn--ghost" onclick="closeModal('userModal')">Cancel</button>
+      <button class="btn btn--primary" onclick="saveUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
